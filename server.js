@@ -1,3 +1,4 @@
+require('dotenv').config();
 // ════════════════════════════════════════════════════════════════
 //  TurfBuddie — Node.js / Express  ·  Google Sheets backend
 // ════════════════════════════════════════════════════════════════
@@ -32,12 +33,23 @@ const SAMPLE_TURFS = [
 ];
 
 // ── Google Auth ────────────────────────────────────────────────
+function parseCredentials(raw) {
+  // Strip surrounding quotes Railway sometimes adds, then parse
+  const trimmed = raw.trim().replace(/^'(.*)'$/s, '$1').replace(/^"(.*)"$/s, '$1');
+  try {
+    return JSON.parse(trimmed);
+  } catch (e) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT is not valid JSON. Copy the .json file contents exactly, with no extra quotes around it.');
+  }
+}
+
 function getAuth() {
   let credentials;
   if (process.env.GOOGLE_SERVICE_ACCOUNT) {
-    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+    credentials = parseCredentials(process.env.GOOGLE_SERVICE_ACCOUNT);
   } else if (process.env.GOOGLE_KEY_FILE) {
-    credentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_KEY_FILE, 'utf8'));
+    const raw = fs.readFileSync(process.env.GOOGLE_KEY_FILE, 'utf8');
+    credentials = JSON.parse(raw);
   } else {
     throw new Error('Set GOOGLE_SERVICE_ACCOUNT or GOOGLE_KEY_FILE env var.');
   }
