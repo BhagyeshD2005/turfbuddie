@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TurfBuddie</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#07090a;--surface:#0d1117;--card:#111820;--card-h:#161f2b;
+  --border:rgba(74,222,128,.1);--border-md:rgba(74,222,128,.22);
+  --green:#4ade80;--green-dim:#22c55e;--green-glow:rgba(74,222,128,.12);--green-deep:#15803d;
+  --white:#eef4f0;--gray:#5f7265;--gray-lt:#8fa899;
+  --red:#f87171;--amber:#fbbf24;--blue:#60a5fa;
+  --r:12px;--r-lg:18px;--r-xl:26px;
+  --shadow:0 12px 40px rgba(0,0,0,.5);--t:.2s ease;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--green-deep);border-radius:10px}
+
+/* AUTH */
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--black);background-image:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(74,222,128,.08) 0%,transparent 70%)}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);padding:40px 36px;width:100%;max-width:420px;box-shadow:var(--shadow);animation:fadeUp .5s ease both}
+.auth-logo{display:flex;justify-content:center;margin-bottom:16px;filter:drop-shadow(0 0 12px rgba(74,222,128,.3))}
+.auth-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:2px;text-align:center;margin-bottom:6px}
+.auth-sub{text-align:center;color:var(--gray-lt);font-size:.88rem;margin-bottom:24px}
+.auth-tabs{display:flex;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:50px;padding:3px;margin-bottom:24px}
+.auth-tab{flex:1;padding:8px;background:transparent;border:none;border-radius:50px;font-family:inherit;font-size:.85rem;font-weight:600;color:var(--gray-lt);cursor:pointer;transition:all var(--t)}
+.auth-tab.active{background:var(--green);color:var(--black)}
+.auth-error{color:var(--red);font-size:.82rem;text-align:center;margin-top:14px;min-height:20px}
+.auth-loader{display:flex;justify-content:center;margin-top:16px}
+.auth-divider{text-align:center;margin:16px 0;position:relative}.auth-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)}.auth-divider span{background:var(--card);padding:0 12px;color:var(--gray);font-size:.78rem;position:relative}
+.btn-auth{width:100%;background:var(--green);color:var(--black);border:none;border-radius:50px;padding:14px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:4px;transition:all var(--t)}
+.btn-auth:hover{background:#6ef197;box-shadow:0 6px 20px rgba(74,222,128,.25)}.btn-auth:disabled{background:rgba(255,255,255,.1);color:var(--gray);cursor:not-allowed}
+.btn-google{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border-md);border-radius:50px;padding:12px;font-family:inherit;font-size:.88rem;font-weight:600;color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all var(--t)}.btn-google:hover{background:rgba(255,255,255,.1)}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:900;display:flex;align-items:center;justify-content:space-between;padding:12px 22px;background:rgba(7,9,10,.9);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.brand-name{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px}
+.brand-accent{color:var(--green)}
+.nav-links{display:flex;align-items:center;gap:3px}
+.nav-link{display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--gray-lt);font-family:inherit;font-size:.82rem;font-weight:600;padding:7px 13px;border-radius:50px;cursor:pointer;transition:all var(--t);position:relative;white-space:nowrap}
+.nav-link:hover{color:var(--white);background:rgba(255,255,255,.06)}
+.nav-link.active{color:var(--green);background:var(--green-glow)}
+.nav-badge{background:var(--red);color:#fff;font-size:.63rem;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;margin-left:2px}
+.nav-right{display:flex;align-items:center;gap:8px}
+.user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:50px;padding:5px 13px 5px 6px}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--green);color:var(--black);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#userDisplayName{font-size:.8rem;font-weight:600;color:var(--gray-lt);max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-logout{width:32px;height:32px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:50%;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t)}.btn-logout:hover{background:rgba(248,113,113,.18)}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+
+/* BOTTOM NAV */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:890;background:rgba(7,9,10,.96);backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:8px 0}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;color:var(--gray);font-family:inherit;font-size:.6rem;font-weight:600;padding:6px;cursor:pointer;transition:color var(--t)}
+.bnav.active{color:var(--green)}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:76px 28px 60px;background:var(--surface);display:flex;flex-direction:column;align-items:center}
+.hero-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(74,222,128,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(74,222,128,.035) 1px,transparent 1px);background-size:52px 52px}
+.hero-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(74,222,128,.12) 0%,transparent 70%);pointer-events:none}
+.hero-content{position:relative;z-index:1;text-align:center;max-width:680px}
+.hero-eyebrow{display:inline-flex;align-items:center;background:rgba(74,222,128,.08);border:1px solid var(--border-md);color:var(--green);font-size:.7rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:5px 16px;border-radius:50px;margin-bottom:20px;animation:fadeDown .6s ease both}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,9vw,5.5rem);line-height:.94;letter-spacing:2px;animation:fadeUp .7s .1s ease both}
+.hero-hl{color:var(--green);text-shadow:0 0 60px rgba(74,222,128,.35)}
+.hero-sub{color:var(--gray-lt);font-size:.98rem;margin:16px 0 28px;animation:fadeUp .7s .2s ease both}
+.search-wrap{position:relative;max-width:500px;margin:0 auto;animation:fadeUp .7s .3s ease both}
+.search-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none}
+.search-wrap input{width:100%;padding:13px 18px 13px 44px;background:rgba(255,255,255,.06);border:1px solid var(--border-md);border-radius:50px;color:var(--white);font-family:inherit;font-size:.9rem;outline:none;transition:all var(--t)}
+.search-wrap input::placeholder{color:var(--gray)}.search-wrap input:focus{border-color:var(--green);background:rgba(74,222,128,.05)}
+.hero-stats{position:relative;z-index:1;display:flex;align-items:center;margin-top:40px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:fadeUp .7s .4s ease both}
+.stat{padding:14px 24px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--green);letter-spacing:1px}
+.stat-lbl{font-size:.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt)}
+.stat-sep{width:1px;height:44px;background:var(--border)}
+
+/* FILTER BAR */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 22px;overflow-x:auto;display:flex;gap:10px;align-items:center;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-group{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.filter-sep{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 4px}
+.ftag{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-lt);font-family:inherit;font-size:.76rem;font-weight:600;padding:5px 13px;border-radius:50px;cursor:pointer;transition:all var(--t);white-space:nowrap}
+.ftag:hover{border-color:var(--green);color:var(--white)}.ftag.active{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green)}
+.ftag-loc{background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2);color:var(--blue)}
+.ftag-loc:hover{border-color:var(--blue)}.ftag-loc:active,.ftag-loc.spin{opacity:.7}
+
+/* SECTION */
+.container{max-width:1200px;margin:0 auto;padding:32px 22px 60px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:10px;flex-wrap:wrap}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px}
+.section-count{font-size:.78rem;color:var(--gray-lt);font-weight:600;background:rgba(255,255,255,.04);border:1px solid var(--border);padding:4px 12px;border-radius:50px}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px}
+
+/* TURF GRID */
+.turf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.turf-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all var(--t);animation:cardIn .4s ease both}
+.turf-card:hover{border-color:var(--border-md);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.4)}
+.card-img{position:relative;height:190px;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.turf-card:hover .card-img img{transform:scale(1.05)}
+.card-img-grad{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(7,9,10,.8))}
+.card-badge{position:absolute;top:10px;left:10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);color:var(--green);font-size:.65rem;font-weight:700;letter-spacing:1.5px;padding:3px 9px;border-radius:50px}
+.card-price{position:absolute;top:10px;right:10px;background:rgba(7,9,10,.75);border:1px solid rgba(255,255,255,.12);color:var(--white);font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:50px;backdrop-filter:blur(8px)}
+.btn-view-imgs{position:absolute;bottom:10px;right:10px;background:rgba(7,9,10,.7);border:1px solid rgba(255,255,255,.15);color:var(--gray-lt);font-family:inherit;font-size:.65rem;font-weight:600;padding:4px 9px;border-radius:50px;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(6px);transition:all var(--t)}
+.btn-view-imgs:hover{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4);color:var(--green)}
+.card-body{padding:14px}
+.card-name{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:1.5px;margin-bottom:5px}
+.card-loc{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--gray-lt);margin-bottom:7px}
+.card-rating{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.stars{color:var(--amber);font-size:.75rem}.rating-val{font-size:.78rem;font-weight:700;color:var(--amber)}.rating-cnt{font-size:.7rem;color:var(--gray)}
+.card-dist{display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--green);margin-bottom:7px}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+.card-time{font-size:.73rem;color:var(--gray-lt)}
+.card-actions{display:flex;align-items:center;gap:6px}
+.btn-fav{background:transparent;border:1px solid var(--border);color:var(--gray);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all var(--t)}.btn-fav:hover{border-color:var(--red);color:var(--red)}.btn-fav.active{border-color:var(--red);color:var(--red);background:rgba(248,113,113,.08)}
+.btn-book{background:var(--green);color:var(--black);border:none;border-radius:50px;padding:5px 14px;font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer;transition:all var(--t)}.btn-book:hover{background:#6ef197;transform:translateY(-1px)}
+
+/* MAP PAGE */
+.map-layout{display:flex;height:calc(100vh - 58px)}
+.map-sidebar{width:320px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.map-sidebar-top{padding:12px;border-bottom:1px solid var(--border)}
+.map-search-wrap{position:relative}
+.map-search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none}
+.map-search-wrap input{width:100%;padding:9px 12px 9px 34px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r);color:var(--white);font-family:inherit;font-size:.82rem;outline:none;transition:all var(--t)}
+.map-search-wrap input:focus{border-color:var(--green)}
+.map-list{flex:1;overflow-y:auto;padding:8px}
+.map-count{padding:8px 12px;font-size:.72rem;color:var(--gray-lt);font-weight:600}
+.map-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r);cursor:pointer;transition:all var(--t);border:1px solid transparent}
+.map-item:hover,.map-item.hl{background:var(--card-h);border-color:var(--border-md)}
+.map-thumb{width:52px;height:42px;border-radius:8px;overflow:hidden;flex-shrink:0}
+.map-thumb img{width:100%;height:100%;object-fit:cover}
+.map-info{flex:1;min-width:0}
+.map-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-loc{font-size:.7rem;color:var(--gray-lt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-meta{display:flex;align-items:center;gap:7px;margin-top:2px}
+.map-price{font-size:.72rem;font-weight:700;color:var(--green)}.map-rating{font-size:.7rem;color:var(--amber)}
+.map-book-btn{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);font-family:inherit;font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:50px;cursor:pointer;white-space:nowrap;transition:all var(--t);flex-shrink:0}
+.map-book-btn:hover{background:rgba(74,222,128,.2)}
+.map-main{flex:1;position:relative;background:var(--surface)}
+#googleMap{width:100%;height:100%}
+.map-overlay-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--gray);pointer-events:none}
+
+/* MODALS */
+.modal-ov{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center}
+.modal-ov.active{display:flex}
+@media(min-width:641px){.modal-ov{align-items:center}}
+.modal-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl) var(--r-xl) 0 0;width:100%;max-width:700px;max-height:92vh;overflow-y:auto;position:relative;animation:panelUp .3s ease both}
+@media(min-width:641px){.modal-panel{border-radius:var(--r-xl);max-height:88vh}}
+.panel-close{position:sticky;top:12px;float:right;margin:12px 14px 0 0;width:30px;height:30px;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:50%;color:var(--gray-lt);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;z-index:2;transition:all var(--t)}.panel-close:hover{background:rgba(248,113,113,.15);color:var(--red)}
+@keyframes panelUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* DETAIL */
+.detail-gal{position:relative;height:260px;overflow:hidden;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.detail-gal img{width:100%;height:100%;object-fit:cover}
+.gal-grad{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(7,9,10,.9))}
+.gal-info{position:absolute;bottom:14px;left:16px}
+.gal-info h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px}
+.gal-info p{font-size:.78rem;color:var(--gray-lt);margin-top:2px}
+.gal-nav{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+.gal-btn{width:30px;height:30px;background:rgba(7,9,10,.6);border:1px solid rgba(255,255,255,.18);color:var(--white);border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all var(--t)}.gal-btn:hover{background:rgba(74,222,128,.25);border-color:var(--green)}
+.gal-dots{position:absolute;bottom:10px;right:14px;display:flex;gap:5px}
+.gdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);border:none;cursor:pointer;padding:0;transition:all var(--t)}.gdot.active{background:var(--green);width:16px;border-radius:3px}
+.lb-trigger-btn{position:absolute;bottom:10px;right:46px;background:rgba(7,9,10,.7);border:1px solid rgba(255,255,255,.15);color:var(--gray-lt);font-family:inherit;font-size:.65rem;font-weight:600;padding:4px 9px;border-radius:50px;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(6px);transition:all var(--t)}.lb-trigger-btn:hover{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4);color:var(--green)}
+.detail-body{padding:20px}
+.detail-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r);padding:8px 14px}
+.chip-lbl{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt);margin-bottom:3px}
+.chip-val{font-size:.92rem;font-weight:700}.chip-val.g{color:var(--green)}
+.detail-thumbs{display:flex;gap:7px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.detail-thumbs::-webkit-scrollbar{display:none}
+.detail-thumb{width:68px;height:52px;flex-shrink:0;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;opacity:.55;transition:all var(--t)}.detail-thumb:hover{opacity:.85}.detail-thumb.active{opacity:1;border-color:var(--green)}
+.detail-thumb img{width:100%;height:100%;object-fit:cover}
+.slot-hdr{display:flex;align-items:center;gap:10px;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:1.5px;margin-bottom:12px;color:var(--gray-lt)}
+.date-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.date-row label{font-size:.78rem;font-weight:600;color:var(--gray-lt);white-space:nowrap}
+.date-row input[type=date]{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--r);color:var(--white);font-family:inherit;font-size:.85rem;padding:7px 11px;outline:none;cursor:pointer;color-scheme:dark;transition:all var(--t)}.date-row input[type=date]:focus{border-color:var(--green)}
+.multi-hint{font-size:.74rem;color:var(--gray-lt);background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.12);border-radius:var(--r);padding:8px 12px;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--gray-lt)}
+.ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}.ldot.av{background:rgba(74,222,128,.25);border:1.5px solid var(--green)}.ldot.sl{background:var(--green);border:1.5px solid var(--green)}.ldot.bk{background:rgba(248,113,113,.25);border:1.5px solid var(--red)}.ldot.rs{background:rgba(251,191,36,.2);border:1.5px solid var(--amber)}
+.slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.slot-btn{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18);color:var(--green);font-family:inherit;font-size:.7rem;font-weight:600;padding:8px 4px;border-radius:var(--r);cursor:pointer;transition:all var(--t);line-height:1.3;text-align:center}
+.slot-btn:hover:not(:disabled){background:rgba(74,222,128,.15);border-color:var(--green)}
+.slot-btn.selected{background:var(--green);color:var(--black);border-color:var(--green);box-shadow:0 0 12px rgba(74,222,128,.3)}
+.slot-btn.booked{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2);color:rgba(248,113,113,.5);cursor:not-allowed}
+.slot-btn.reserved{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.2);color:rgba(251,191,36,.55);cursor:not-allowed}
+.slot-summary{display:none;align-items:center;justify-content:space-between;background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.2);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:.82rem}
+.slot-summary.show{display:flex}
+.ss-slots{font-weight:500;color:var(--white)}.ss-price{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--green);letter-spacing:1px}
+
+/* BOOKING FORM */
+.booking-panel{max-width:480px}
+.book-head{padding:20px 20px 0;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0}
+.book-head h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;margin-bottom:10px}
+.slot-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.stag{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--gray-lt);font-size:.73rem;font-weight:600;padding:4px 11px;border-radius:50px}
+.timer-strip{display:flex;align-items:center;justify-content:space-between;background:rgba(251,191,36,.07);border-bottom:1px solid rgba(251,191,36,.15);padding:9px 20px;font-size:.78rem;font-weight:600;color:var(--amber)}
+.timer-left{display:flex;align-items:center;gap:7px}
+.timer-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.timer-val{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--amber)}.timer-val.urgent{color:var(--red);animation:pulse .6s ease infinite}
+.book-form{padding:18px 20px 22px}
+.f-group{margin-bottom:14px}
+.f-label{display:block;font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt);margin-bottom:6px}
+.f-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;color:var(--white);font-family:inherit;font-size:.9rem;outline:none;transition:all var(--t)}.f-input::placeholder{color:var(--gray)}.f-input:focus{border-color:var(--green);background:rgba(74,222,128,.04)}.f-input:read-only{opacity:.6}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.amount-box{display:flex;align-items:center;justify-content:space-between;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18);border-radius:var(--r);padding:12px 16px;margin-bottom:14px}
+.amount-lbl{font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt)}
+.amount-val{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--green);letter-spacing:1px}
+
+/* TAB ROW */
+.tab-row{display:flex;gap:6px;flex-wrap:wrap}
+.ttab{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-lt);font-family:inherit;font-size:.78rem;font-weight:600;padding:6px 16px;border-radius:50px;cursor:pointer;transition:all var(--t)}.ttab.active{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green)}
+
+/* BOOKING CARDS */
+.blist{display:flex;flex-direction:column;gap:14px}
+.bcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;transition:all var(--t)}.bcard:hover{border-color:var(--border-md)}
+.bcard-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.bcard-id{font-size:.72rem;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;color:var(--green)}
+.bstatus{font-size:.67rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:50px}
+.bstatus.confirmed{background:rgba(74,222,128,.1);color:var(--green)}
+.bstatus.completed{background:rgba(96,165,250,.1);color:var(--blue)}
+.bstatus.cancelled{background:rgba(248,113,113,.1);color:var(--red)}
+.bcard-mid{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.bcard-thumb{width:62px;height:52px;border-radius:var(--r);overflow:hidden;flex-shrink:0}.bcard-thumb img{width:100%;height:100%;object-fit:cover}
+.bcard-details{flex:1;min-width:0}
+.bcard-turf{font-weight:700;font-size:.9rem;margin-bottom:4px}
+.bcard-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:.72rem;color:var(--gray-lt);margin-bottom:3px}
+.bcard-slots{font-size:.75rem;color:var(--gray-lt)}
+.bcard-amt{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--green);letter-spacing:1px;flex-shrink:0}
+.bcard-foot{display:flex;gap:7px;padding:10px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.bcard-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--gray-lt);font-family:inherit;font-size:.76rem;font-weight:600;padding:6px 14px;border-radius:50px;cursor:pointer;transition:all var(--t)}.bcard-btn:hover{border-color:var(--green);color:var(--green)}.bcard-btn.danger{color:var(--red);border-color:rgba(248,113,113,.2)}.bcard-btn.danger:hover{background:rgba(248,113,113,.08)}
+
+/* PROFILE */
+.profile-hero{background:linear-gradient(135deg,rgba(74,222,128,.06),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:var(--r-xl);padding:28px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:18px;text-align:center}
+.profile-avatar-wrap{position:relative}
+.profile-avatar{width:72px;height:72px;border-radius:50%;background:rgba(74,222,128,.15);border:2px solid var(--green);font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--green);display:flex;align-items:center;justify-content:center}
+.profile-verified{position:absolute;bottom:2px;right:2px;width:18px;height:18px;border-radius:50%;background:var(--green);color:var(--black);font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px}
+.profile-email{font-size:.8rem;color:var(--gray-lt);margin-top:2px}
+.profile-since{font-size:.72rem;color:var(--gray);margin-top:2px}
+.profile-stats-row{display:flex;align-items:center;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.pstat{padding:10px 20px;text-align:center}.pstat-n{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--green);letter-spacing:1px}.pstat-l{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt)}
+.pstat-sep{width:1px;height:36px;background:var(--border)}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:14px;overflow:hidden}
+.pcard-title{display:flex;align-items:center;gap:8px;padding:14px 18px;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt);border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.pcard-body{padding:16px 18px}
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:14px}
+.fav-card{background:var(--card-h);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all var(--t)}.fav-card:hover{border-color:var(--green)}
+.fav-img{width:100%;height:80px;object-fit:cover}
+.fav-info{padding:7px 9px}
+.fav-name{font-size:.78rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fav-price{font-size:.7rem;color:var(--green)}
+.recent-list{padding:0 16px 14px}
+.r-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}.r-item:last-child{border:none}
+.r-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.r-text{flex:1;font-size:.78rem;color:var(--gray-lt)}.r-text b{color:var(--white)}
+.r-date{font-size:.75rem;font-weight:700;color:var(--green)}
+.empty-note{font-size:.8rem;color:var(--gray);padding:14px}
+.btn-danger{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);font-family:inherit;font-size:.88rem;font-weight:600;padding:10px 22px;border-radius:50px;cursor:pointer;transition:all var(--t)}.btn-danger:hover{background:rgba(248,113,113,.16)}.btn-danger.full-w{width:100%;justify-content:center;display:flex}
+
+/* DETAIL MODAL */
+.bdetail-head{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 10px}
+.bdetail-head h2{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px}
+.bdetail-body{padding:0 20px 20px}
+.bdetail-summary{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.bdr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.81rem}.bdr:last-child{border:none}.bdr .lb{color:var(--gray)}.bdr .vl{font-weight:600}.bdr .vl.g{color:var(--green)}
+
+/* SUCCESS */
+.success-panel{padding:36px 26px;text-align:center;max-width:440px}
+.success-burst{position:relative;width:74px;height:74px;margin:0 auto 20px}
+.success-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--green);opacity:.3;animation:expand 1.6s ease infinite}
+@keyframes expand{0%{transform:scale(1);opacity:.3}100%{transform:scale(1.9);opacity:0}}
+.success-check{width:74px;height:74px;border-radius:50%;background:rgba(74,222,128,.1);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:var(--green);position:relative;z-index:1}
+.success-title{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;margin-bottom:6px}
+.success-sub{color:var(--gray-lt);font-size:.84rem;margin-bottom:22px}
+.booking-summary{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:left;margin-bottom:18px}
+.sum-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:.81rem}.sum-row:last-child{border:none}.sum-row .lb{color:var(--gray)}.sum-row .vl{font-weight:600}.sum-row .vl.g{color:var(--green)}
+
+/* BUTTONS */
+.btn-primary{background:var(--green);color:var(--black);border:none;border-radius:50px;padding:12px 28px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary:hover:not(:disabled){background:#6ef197;transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,222,128,.28)}.btn-primary:disabled{background:rgba(255,255,255,.07);color:var(--gray);cursor:not-allowed;box-shadow:none;transform:none}.btn-primary.full-w{width:100%}
+.btn-outline{background:transparent;color:var(--green);border:1px solid var(--border-md);border-radius:50px;padding:11px 26px;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;justify-content:center}
+.btn-outline:hover{background:var(--green-glow)}.btn-outline.full-w{width:100%}
+
+/* SHARED FIELDS */
+.field-group{margin-bottom:14px}
+.field-label{display:block;font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-lt);margin-bottom:6px}
+.field-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;color:var(--white);font-family:inherit;font-size:.9rem;outline:none;transition:all var(--t)}.field-input::placeholder{color:var(--gray)}.field-input:focus{border-color:var(--green);background:rgba(74,222,128,.04)}
+
+/* LIGHTBOX */
+.lightbox-ov{display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.96);flex-direction:column}.lightbox-ov.active{display:flex}
+.lightbox-wrap{width:100%;height:100%;display:flex;flex-direction:column;animation:fadeUp .22s ease both}
+.lb-header{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);flex-shrink:0}
+.lb-turf-name{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:1.5px}
+.lb-counter{background:rgba(74,222,128,.1);border:1px solid var(--border-md);color:var(--green);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:1px}
+.lb-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t);flex-shrink:0}.lb-close:hover{background:rgba(248,113,113,.18);color:var(--red)}
+.lb-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:0;padding:14px 66px}
+.lb-img-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+.lb-spinner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(7,9,10,.6)}.lb-spinner.hidden{display:none}
+.lb-main-img{max-width:100%;max-height:100%;object-fit:contain;border-radius:var(--r);box-shadow:0 20px 60px rgba(0,0,0,.6);transition:opacity .2s ease;opacity:0;user-select:none}.lb-main-img.visible{opacity:1}
+.lb-arrow{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:all var(--t)}.lb-arrow:hover{background:rgba(74,222,128,.2);border-color:var(--green);color:var(--green)}.lb-arrow:disabled{opacity:.2;cursor:not-allowed}.lb-prev{left:12px}.lb-next{right:12px}
+.lb-filmstrip{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px 14px;overflow-x:auto;flex-shrink:0;background:rgba(255,255,255,.02);border-top:1px solid var(--border);scrollbar-width:thin}
+.lb-thumb{width:64px;height:48px;flex-shrink:0;border-radius:9px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all var(--t);opacity:.5}.lb-thumb img{width:100%;height:100%;object-fit:cover}.lb-thumb:hover{opacity:.85;border-color:rgba(74,222,128,.4)}.lb-thumb.active{opacity:1;border-color:var(--green);box-shadow:0 0 10px rgba(74,222,128,.3)}
+.lb-kb-hint{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.5);border:1px solid var(--border);color:var(--gray);font-size:.7rem;padding:5px 13px;border-radius:50px;pointer-events:none;opacity:0;transition:opacity .4s ease;white-space:nowrap;z-index:10}.lb-kb-hint.show{opacity:1}
+
+/* LOADING / EMPTY */
+.loading-state,.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--gray)}
+.loader-ring{width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--green);animation:spin .75s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--card);border:1px solid var(--border);color:var(--white);padding:10px 20px;border-radius:50px;font-size:.81rem;font-weight:500;z-index:9999;opacity:0;pointer-events:none;transition:transform .28s ease,opacity .28s ease;max-width:92vw;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5)}.toast.show{transform:translateX(-50%) translateY(0);opacity:1}.toast.green{border-color:rgba(74,222,128,.4);color:var(--green)}.toast.red{border-color:rgba(248,113,113,.4);color:var(--red)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+.turf-card:nth-child(1){animation-delay:.04s}.turf-card:nth-child(2){animation-delay:.09s}.turf-card:nth-child(3){animation-delay:.14s}.turf-card:nth-child(4){animation-delay:.19s}
+
+/* RESPONSIVE */
+@media(max-width:860px){.map-sidebar{width:280px}.nav-links{display:none}}
+@media(max-width:640px){
+  .navbar{padding:10px 14px}#userDisplayName{display:none}
+  .bottom-nav{display:flex}
+  .container{padding:24px 14px 80px}
+  .hero{padding:52px 16px 44px}.stat{padding:11px 16px;flex:1}
+  .detail-body,.book-form,.book-head{padding:14px}
+  .success-panel{padding:28px 18px}
+  .slot-grid{grid-template-columns:repeat(3,1fr)}
+  .modal-panel{border-radius:var(--r-lg);max-height:96vh}
+  .section-hdr{flex-direction:column;align-items:flex-start}
+  .auth-card{padding:28px 20px}
+  .map-layout{flex-direction:column;height:auto}.map-sidebar{width:100%;max-height:260px;border-right:none;border-bottom:1px solid var(--border)}.map-main{height:48vh}
+  .pf-row{grid-template-columns:1fr}
+  .lb-stage{padding:12px 50px}.lb-prev{left:5px}.lb-next{right:5px}.lb-thumb{width:52px;height:38px}
+  .page-hdr{flex-direction:column;align-items:flex-start}
+}
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="21" stroke="#4ade80" stroke-width="1.5"/><path d="M22 6C22 6 14 14 14 22C14 30 22 38 22 38C22 38 30 30 30 22C30 14 22 6 22 6Z" fill="#4ade80" opacity="0.25"/><path d="M6 22H38M11 13C15 16 22 17 29 14M11 31C15 28 22 27 29 30" stroke="#4ade80" stroke-width="1.2" opacity="0.7"/></svg></div>
+    <h1 class="auth-title">Turf<span style="color:var(--green)">Buddie</span></h1>
+    <p class="auth-sub">Sign in to book your pitch</p>
+    <div class="auth-tabs"><button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button><button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</button></div>
+    <div id="loginForm">
+      <div class="field-group"><label class="field-label">Email</label><input type="email" id="loginEmail" class="field-input" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="field-group"><label class="field-label">Password</label><input type="password" id="loginPassword" class="field-input" placeholder="••••••••" autocomplete="current-password"/></div>
+      <button class="btn-auth" id="loginBtn" onclick="doLogin()">Sign In</button>
+      <div class="auth-divider"><span>or</span></div>
+      <button class="btn-google" onclick="doGoogleLogin()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+    </div>
+    <div id="signupForm" style="display:none">
+      <div class="field-group"><label class="field-label">Full Name</label><input type="text" id="signupName" class="field-input" placeholder="Your Name" autocomplete="name"/></div>
+      <div class="field-group"><label class="field-label">Email</label><input type="email" id="signupEmail" class="field-input" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="field-group"><label class="field-label">Phone</label><input type="tel" id="signupPhone" class="field-input" placeholder="+91 XXXXX XXXXX" autocomplete="tel"/></div>
+      <div class="field-group"><label class="field-label">Password</label><input type="password" id="signupPassword" class="field-input" placeholder="Min 6 characters" autocomplete="new-password"/></div>
+      <button class="btn-auth" id="signupBtn" onclick="doSignup()">Create Account</button>
+      <div class="auth-divider"><span>or</span></div>
+      <button class="btn-google" onclick="doGoogleLogin()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <div id="authLoader" class="auth-loader" style="display:none"><div class="loader-ring"></div></div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="appShell" style="display:none">
+  <nav class="navbar">
+    <div class="nav-brand" onclick="showPage('home')" style="cursor:pointer">
+      <svg width="26" height="26" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="21" stroke="#4ade80" stroke-width="1.5"/><path d="M22 6C22 6 14 14 14 22C14 30 22 38 22 38C22 38 30 30 30 22C30 14 22 6 22 6Z" fill="#4ade80" opacity="0.25"/><path d="M6 22H38" stroke="#4ade80" stroke-width="1.2" opacity="0.7"/></svg>
+      <span class="brand-name">Turf<span class="brand-accent">Buddie</span></span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" id="nl-home" onclick="showPage('home')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+      <button class="nav-link" id="nl-map" onclick="showPage('map')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map</button>
+      <button class="nav-link" id="nl-bookings" onclick="showPage('bookings')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>My Bookings<span class="nav-badge" id="bookingsBadge" style="display:none"></span></button>
+      <button class="nav-link" id="nl-profile" onclick="showPage('profile')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</button>
+    </div>
+    <div class="nav-right">
+      <div class="user-chip" onclick="showPage('profile')" style="cursor:pointer"><div class="user-avatar" id="userAvatar">?</div><span id="userDisplayName">—</span></div>
+      <button class="btn-logout" onclick="doLogout()" title="Sign out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+    </div>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="page active">
+    <section class="hero">
+      <div class="hero-grid"></div><div class="hero-glow"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow">⚡ Instant Slot Booking</div>
+        <h1 class="hero-title">Find Your<br/><span class="hero-hl">Perfect Pitch</span></h1>
+        <p class="hero-sub">Premium football turfs · Real-time availability · No waiting</p>
+        <div class="search-wrap">
+          <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="searchInput" placeholder="Search turf name or city…" oninput="applyFilters()"/>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="statTurfs">–</span><span class="stat-lbl">Turfs</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><span class="stat-num">5 min</span><span class="stat-lbl">Hold Timer</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><span class="stat-num">₹700+</span><span class="stat-lbl">From/hr</span></div>
+      </div>
+    </section>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <button class="ftag active" data-ftype="city" data-fval="all" onclick="setTag(this,'city')">All Cities</button>
+        <button class="ftag" data-ftype="city" data-fval="nagpur" onclick="setTag(this,'city')">Nagpur</button>
+        <button class="ftag" data-ftype="city" data-fval="pune" onclick="setTag(this,'city')">Pune</button>
+        <button class="ftag" data-ftype="city" data-fval="mumbai" onclick="setTag(this,'city')">Mumbai</button>
+        <button class="ftag" data-ftype="city" data-fval="nashik" onclick="setTag(this,'city')">Nashik</button>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group">
+        <button class="ftag active" data-ftype="price" data-fval="all" onclick="setTag(this,'price')">Any Price</button>
+        <button class="ftag" data-ftype="price" data-fval="budget" onclick="setTag(this,'price')">Budget ≤₹800</button>
+        <button class="ftag" data-ftype="price" data-fval="mid" onclick="setTag(this,'price')">Mid ₹800–1100</button>
+        <button class="ftag" data-ftype="price" data-fval="premium" onclick="setTag(this,'price')">Premium ₹1100+</button>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group">
+        <button class="ftag active" data-ftype="rating" data-fval="all" onclick="setTag(this,'rating')">All Ratings</button>
+        <button class="ftag" data-ftype="rating" data-fval="4" onclick="setTag(this,'rating')">4★+</button>
+        <button class="ftag" data-ftype="rating" data-fval="4.5" onclick="setTag(this,'rating')">4.5★+</button>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group">
+        <button class="ftag active" data-ftype="sort" data-fval="default" onclick="setTag(this,'sort')">Default</button>
+        <button class="ftag" data-ftype="sort" data-fval="price_asc" onclick="setTag(this,'sort')">Price ↑</button>
+        <button class="ftag" data-ftype="sort" data-fval="price_desc" onclick="setTag(this,'sort')">Price ↓</button>
+        <button class="ftag" data-ftype="sort" data-fval="rating" onclick="setTag(this,'sort')">Top Rated</button>
+        <button class="ftag ftag-loc" data-ftype="sort" data-fval="distance" onclick="sortByDistance()">📍 Nearest</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="section-hdr">
+        <span class="section-title">Available Turfs</span>
+        <span class="section-count" id="turfCount">–</span>
+      </div>
+      <div class="turf-grid" id="turfGrid"><div class="loading-state"><div class="loader-ring"></div><p>Loading turfs…</p></div></div>
+    </div>
+  </div>
+
+  <!-- MAP PAGE -->
+  <div id="page-map" class="page">
+    <div class="map-layout">
+      <div class="map-sidebar">
+        <div class="map-sidebar-top">
+          <div class="map-search-wrap">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="mapSearch" placeholder="Search turfs…" oninput="filterMapList()"/>
+          </div>
+        </div>
+        <div class="map-count" id="mapCount">–</div>
+        <div class="map-list" id="mapList"></div>
+      </div>
+      <div class="map-main">
+        <div id="googleMap">
+          <div class="map-overlay-hint" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--gray)">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(74,222,128,.3)" stroke-width="1.2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+            <p style="font-size:.88rem">Set MAPS_API_KEY env variable to enable interactive map</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY BOOKINGS PAGE -->
+  <div id="page-bookings" class="page">
+    <div class="container">
+      <div class="page-hdr">
+        <h2 class="page-title">My Bookings</h2>
+        <div class="tab-row">
+          <button class="ttab active" id="tt-upcoming" onclick="switchBTab('upcoming')">Upcoming</button>
+          <button class="ttab" id="tt-past" onclick="switchBTab('past')">Past</button>
+          <button class="ttab" id="tt-cancelled" onclick="switchBTab('cancelled')">Cancelled</button>
+        </div>
+      </div>
+      <div id="bookingsList" class="blist"><div class="loading-state"><div class="loader-ring"></div></div></div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div id="page-profile" class="page">
+    <div class="container" style="max-width:740px">
+      <div class="profile-hero">
+        <div class="profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">?</div><div class="profile-verified">✓</div></div>
+        <div class="profile-meta"><div class="profile-name" id="profileName">—</div><div class="profile-email" id="profileEmail">—</div><div class="profile-since" id="profileSince"></div></div>
+        <div class="profile-stats-row">
+          <div class="pstat"><span class="pstat-n" id="ps-bookings">0</span><span class="pstat-l">Bookings</span></div>
+          <div class="pstat-sep"></div>
+          <div class="pstat"><span class="pstat-n" id="ps-spent">₹0</span><span class="pstat-l">Spent</span></div>
+          <div class="pstat-sep"></div>
+          <div class="pstat"><span class="pstat-n" id="ps-hours">0h</span><span class="pstat-l">On Pitch</span></div>
+        </div>
+      </div>
+      <div class="profile-card">
+        <div class="pcard-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Personal Details</div>
+        <div class="pcard-body">
+          <div class="pf-row"><div class="f-group"><label class="f-label">Full Name</label><input type="text" id="pfName" class="f-input" placeholder="Your name"/></div><div class="f-group"><label class="f-label">Phone</label><input type="tel" id="pfPhone" class="f-input" placeholder="+91 XXXXX XXXXX"/></div></div>
+          <div class="f-group"><label class="f-label">Email</label><input type="email" id="pfEmail" class="f-input" readonly style="opacity:.6"/></div>
+          <div class="f-group"><label class="f-label">City</label><input type="text" id="pfCity" class="f-input" placeholder="Your city"/></div>
+          <button class="btn-primary" onclick="saveProfile()" style="margin-top:4px">Save Changes</button>
+        </div>
+      </div>
+      <div class="profile-card">
+        <div class="pcard-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>Favourite Turfs</div>
+        <div id="favGrid" class="fav-grid"><p class="empty-note">Tap ♡ on any turf card to save it here.</p></div>
+      </div>
+      <div class="profile-card">
+        <div class="pcard-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Recent Activity</div>
+        <div id="recentActivity" class="recent-list"><div class="loading-state" style="padding:20px 0"><div class="loader-ring"></div></div></div>
+      </div>
+      <div class="profile-card" style="border-color:rgba(248,113,113,.18)">
+        <div class="pcard-title" style="color:var(--red)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Account</div>
+        <div class="pcard-body"><button class="btn-danger" onclick="doLogout()">Sign Out</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" style="display:flex">
+    <button class="bnav active" id="bn-home" onclick="showPage('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="bnav" id="bn-map" onclick="showPage('map')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg><span>Map</span></button>
+    <button class="bnav" id="bn-bookings" onclick="showPage('bookings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Bookings</span></button>
+    <button class="bnav" id="bn-profile" onclick="showPage('profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<div id="turfModal" class="modal-ov" onclick="closeBgClick(event,'turfModal',closeTurfModal)"><div class="modal-panel"><button class="panel-close" onclick="closeTurfModal()">✕</button><div id="modalContent"></div></div></div>
+<div id="bookingModal" class="modal-ov" onclick="closeBgClick(event,'bookingModal',closeBookingModal)"><div class="modal-panel booking-panel"><button class="panel-close" onclick="closeBookingModal()">✕</button><div id="bookingContent"></div></div></div>
+<div id="successModal" class="modal-ov"><div class="modal-panel success-panel"><div class="success-burst"><div class="success-ring"></div><div class="success-check">✓</div></div><h2 class="success-title">Booking Confirmed!</h2><p class="success-sub">Your slot is locked in. See you on the pitch! 🏃</p><div id="successDetails"></div><div style="display:flex;gap:10px"><button class="btn-outline full-w" onclick="closeSuccessModal();showPage('bookings')">View Booking</button><button class="btn-primary full-w" onclick="closeSuccessModal()">Done</button></div></div></div>
+<div id="bdetailModal" class="modal-ov" onclick="closeBgClick(event,'bdetailModal',closeBdetail)"><div class="modal-panel" style="max-width:460px"><button class="panel-close" onclick="closeBdetail()">✕</button><div id="bdetailContent"></div></div></div>
+<div id="lightbox" class="lightbox-ov" onclick="lbBgClick(event)"><div class="lightbox-wrap"><div class="lb-header"><div style="display:flex;align-items:center;gap:14px"><span id="lbTurfName" class="lb-turf-name"></span><span id="lbCounter" class="lb-counter"></span></div><button class="lb-close" onclick="closeLightbox()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="lb-stage"><button class="lb-arrow lb-prev" onclick="lbNav(-1)" id="lbPrev"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button><div class="lb-img-wrap"><div class="lb-spinner" id="lbSpinner"><div class="loader-ring"></div></div><img id="lbMainImg" src="" alt="" class="lb-main-img" onload="lbImgLoaded()" onerror="lbImgError()"/></div><button class="lb-arrow lb-next" onclick="lbNav(1)" id="lbNext"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button><div class="lb-kb-hint" id="lbKbHint">← → to navigate · Esc to close</div></div><div class="lb-filmstrip" id="lbFilmstrip"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  TurfBuddie — Node.js edition
+//  All google.script.run calls replaced with fetch() to /api/*
+// ════════════════════════════════════════════════════════════════
+
+var RAZORPAY_KEY = '';
+var MAPS_API_KEY = '';
+var currentUser  = null;
+
+var allTurfs      = [];
+var filteredTurfs = [];
+var selectedTurf  = null;
+var selectedSlots = [];
+var selectedDate  = '';
+var reservationId = null;
+var countdownTimer = null;
+var galleryImages  = [];
+var galleryIdx     = 0;
+var userLocation   = null;
+var userBookings   = [];
+var activeBookingTab = 'upcoming';
+var favourites     = [];
+var userProfile    = {};
+var mapMarkers     = [];
+var googleMap      = null;
+var mapInitialised = false;
+var activeFilters  = { city: 'all', price: 'all', rating: 'all', sort: 'default' };
+
+// Lightbox
+var lbImages = [], lbIdx = 0, lbTurfId = '', lbKbTimer;
+
+// ── API helper ────────────────────────────────────────────────────
+function api(method, path, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(path, opts).then(function(r){ return r.json(); });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  BOOTSTRAP
+// ════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function () {
+  favourites = safeJsonParse(localStorage.getItem('tb_favs') || '[]') || [];
+  api('GET', '/api/config').then(function(cfg) {
+    RAZORPAY_KEY = cfg.razorpayKey || '';
+    MAPS_API_KEY = cfg.mapsApiKey  || '';
+    initFirebase(cfg.firebaseApiKey || '');
+  }).catch(function(e) { showToast('Config error: ' + e.message, 'red'); });
+});
+
+function initFirebase(apiKey) {
+  var firebaseConfig = {
+    apiKey:            apiKey || "AIzaSyAF3ATt098_yJz4tNE_5aa4ZP9Mmcypcfk",
+    authDomain:        "turfbuddie-99e17.firebaseapp.com",
+    projectId:         "turfbuddie-99e17",
+    storageBucket:     "turfbuddie-99e17.firebasestorage.app",
+    messagingSenderId: "180889876877",
+    appId:             "1:180889876877:web:e339d70923327288c725c4"
+  };
+  firebase.initializeApp(firebaseConfig);
+  firebase.auth().onAuthStateChanged(function (user) {
+    if (user) { currentUser = user; bootApp(user); }
+    else       { currentUser = null; showAuthScreen(); }
+  });
+}
+
+function bootApp(user) {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appShell').style.display   = 'block';
+  document.getElementById('userDisplayName').textContent = user.displayName || user.email || 'User';
+  document.getElementById('userAvatar').textContent       = (user.displayName || user.email || 'U')[0].toUpperCase();
+  loadTurfs();
+  loadUserBookings();
+  loadUserProfile(user);
+}
+
+function loadUserProfile(user) {
+  if (!user || !user.email) return;
+  api('GET', '/api/profile?email=' + encodeURIComponent(user.email)).then(function(r) {
+    if (r && r.success && r.profile) {
+      userProfile = r.profile;
+    } else {
+      var stored = safeJsonParse(localStorage.getItem('tb_profile') || '{}') || {};
+      userProfile = { Name: user.displayName || stored.name || '', Email: user.email, Phone: stored.phone || '', City: stored.city || '' };
+    }
+    populateProfile(user);
+  }).catch(function() {
+    var stored = safeJsonParse(localStorage.getItem('tb_profile') || '{}') || {};
+    userProfile = { Name: user.displayName || stored.name || '', Email: user.email, Phone: stored.phone || '', City: stored.city || '' };
+    populateProfile(user);
+  });
+}
+
+function showAuthScreen() {
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display   = 'none';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════════════════════════
+function switchTab(t) {
+  var l = t === 'login';
+  document.getElementById('loginForm').style.display  = l ? '' : 'none';
+  document.getElementById('signupForm').style.display = l ? 'none' : '';
+  document.getElementById('tabLogin').classList.toggle('active', l);
+  document.getElementById('tabSignup').classList.toggle('active', !l);
+  document.getElementById('authError').textContent = '';
+}
+function setAuthBusy(b) {
+  document.getElementById('authLoader').style.display = b ? 'flex' : 'none';
+  ['loginBtn','signupBtn'].forEach(function(id){ var el = document.getElementById(id); if(el) el.disabled = b; });
+}
+function showAuthError(m) { document.getElementById('authError').textContent = m; }
+
+function doLogin() {
+  var e = document.getElementById('loginEmail').value.trim(), p = document.getElementById('loginPassword').value;
+  if (!e||!p) { showAuthError('Fill in all fields.'); return; }
+  setAuthBusy(true);
+  firebase.auth().signInWithEmailAndPassword(e,p).catch(function(err){ setAuthBusy(false); showAuthError(fae(err.code)); });
+}
+
+function doSignup() {
+  var n = document.getElementById('signupName').value.trim(), e = document.getElementById('signupEmail').value.trim(), p = document.getElementById('signupPassword').value;
+  var ph = document.getElementById('signupPhone').value.trim();
+  if (!n||!e||!p) { showAuthError('Fill required fields.'); return; }
+  if (p.length < 6) { showAuthError('Password min 6 chars.'); return; }
+  setAuthBusy(true);
+  firebase.auth().createUserWithEmailAndPassword(e,p).then(function(c){
+    return c.user.updateProfile({ displayName: n }).then(function(){
+      if (ph) {
+        api('POST', '/api/profile/save', { email: e, name: n, phone: ph, city: '' });
+        userProfile = { Name: n, Email: e, Phone: ph, City: '' };
+        localStorage.setItem('tb_profile', JSON.stringify({ name: n, phone: ph, city: '' }));
+      }
+    });
+  }).catch(function(err){ setAuthBusy(false); showAuthError(fae(err.code)); });
+}
+
+function doGoogleLogin() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){ showAuthError(fae(e.code)); }); }
+function doLogout() { firebase.auth().signOut(); }
+function fae(c) {
+  return ({ 'auth/user-not-found':'No account found.','auth/wrong-password':'Wrong password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/invalid-email':'Invalid email.','auth/weak-password':'Password too weak.','auth/popup-closed-by-user':'Sign-in cancelled.','auth/too-many-requests':'Too many attempts.' }[c] || 'Something went wrong.');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PAGE NAVIGATION
+// ════════════════════════════════════════════════════════════════
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('page-' + page).classList.add('active');
+  ['home','map','bookings','profile'].forEach(function(p){
+    document.getElementById('nl-' + p).classList.toggle('active', p === page);
+    var bn = document.getElementById('bn-' + p);
+    if (bn) bn.classList.toggle('active', p === page);
+  });
+  if (page === 'map')      initMap();
+  if (page === 'bookings') renderBookings();
+  if (page === 'profile')  refreshProfile();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  TURF LOADING & FILTERS
+// ════════════════════════════════════════════════════════════════
+function loadTurfs() {
+  document.getElementById('turfGrid').innerHTML = '<div class="loading-state"><div class="loader-ring"></div><p>Loading turfs…</p></div>';
+  api('GET', '/api/turfs').then(function(r){
+    if (!r||!r.success) { renderTurfError(r ? r.message : 'Failed to load'); return; }
+    allTurfs = r.turfs || [];
+    document.getElementById('statTurfs').textContent = allTurfs.length;
+    applyFilters();
+  }).catch(function(e){ renderTurfError('Server error: ' + e.message); });
+}
+
+function renderTurfError(msg) {
+  document.getElementById('turfGrid').innerHTML = '<div class="empty-state" style="color:var(--red)">⚠️ '+msg+'</div>';
+}
+
+function setTag(btn, type) {
+  document.querySelectorAll('.ftag[data-ftype="'+type+'"]').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  activeFilters[type] = btn.getAttribute('data-fval');
+  applyFilters();
+}
+
+function applyFilters() {
+  var q    = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  var city = activeFilters.city, price = activeFilters.price, rat = activeFilters.rating, sort = activeFilters.sort;
+  var list = allTurfs.filter(function(t) {
+    var matchQ  = !q || t.Name.toLowerCase().indexOf(q) !== -1 || t.Location.toLowerCase().indexOf(q) !== -1;
+    var matchC  = city === 'all' || t.Location.toLowerCase().indexOf(city) !== -1;
+    var matchP  = price === 'all' || (price==='budget' && t.Base_Price<=800) || (price==='mid' && t.Base_Price>800 && t.Base_Price<=1100) || (price==='premium' && t.Base_Price>1100);
+    var matchR  = rat === 'all' || t.Rating >= parseFloat(rat);
+    return matchQ && matchC && matchP && matchR;
+  });
+  if (sort === 'price_asc')  list.sort(function(a,b){ return a.Base_Price - b.Base_Price; });
+  if (sort === 'price_desc') list.sort(function(a,b){ return b.Base_Price - a.Base_Price; });
+  if (sort === 'rating')     list.sort(function(a,b){ return b.Rating - a.Rating; });
+  if (sort === 'distance' && userLocation) list.sort(function(a,b){ return dist(a,userLocation) - dist(b,userLocation); });
+  filteredTurfs = list;
+  renderTurfs(list);
+}
+
+function sortByDistance() {
+  if (!navigator.geolocation) { showToast('Geolocation not supported','red'); return; }
+  showToast('Getting your location…');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    activeFilters.sort = 'distance';
+    document.querySelectorAll('.ftag[data-ftype="sort"]').forEach(function(b){ b.classList.remove('active'); });
+    var db = document.querySelector('.ftag[data-fval="distance"]');
+    if (db) db.classList.add('active');
+    applyFilters();
+    showToast('Sorted by distance!','green');
+  }, function(){ showToast('Could not get location','red'); });
+}
+
+function dist(turf, loc) {
+  if (!turf.Lat || !turf.Lng || !loc) return 99999;
+  var dLat = (turf.Lat-loc.lat)*Math.PI/180, dLng = (turf.Lng-loc.lng)*Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(loc.lat*Math.PI/180)*Math.cos(turf.Lat*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function renderTurfs(turfs) {
+  var count = document.getElementById('turfCount');
+  count.textContent = turfs.length + (turfs.length===1?' turf':' turfs');
+  if (!turfs.length) { document.getElementById('turfGrid').innerHTML = '<div class="empty-state">🏟️ No turfs match your filters.</div>'; return; }
+  var html = '';
+  for (var i = 0; i < turfs.length; i++) {
+    var t = turfs[i];
+    var imgs = (t.Image_URL||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+    if (!imgs.length) imgs = ['https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=600&q=80'];
+    var img = imgs[0];
+    var oh = pad(t.Open_Time)+':00', ch = pad(t.Close_Time)+':00';
+    var isFav = favourites.indexOf(t.Turf_ID) !== -1;
+    var distStr = (userLocation && t.Lat) ? (dist(t,userLocation).toFixed(1)+' km away') : '';
+    var ratingHtml = t.Rating > 0 ? '<div class="card-rating"><span class="stars">'+starStr(t.Rating)+'</span><span class="rating-val">'+t.Rating.toFixed(1)+'</span><span class="rating-cnt">('+t.Review_Count+')</span></div>' : '';
+    var distHtml = distStr ? '<div class="card-dist"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'+distStr+'</div>' : '';
+    var photoBadge = imgs.length>1 ? '<button class="btn-view-imgs card-img-btn" onclick="event.stopPropagation();openLightbox(\''+t.Turf_ID+'\',0)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>'+imgs.length+' Photos</button>' : '';
+    html += '<div class="turf-card" onclick="openTurfDetail(\''+t.Turf_ID+'\')" style="animation-delay:'+(i*.07)+'s">'
+      +'<div class="card-img"><img src="'+img+'" alt="'+esc(t.Name)+'" loading="lazy" onerror="this.src=\'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=600&q=80\'"/>'
+      +'<div class="card-img-grad"></div><span class="card-badge">⚡ Available</span><span class="card-price">₹'+t.Base_Price+'/hr</span>'+photoBadge+'</div>'
+      +'<div class="card-body"><div class="card-name">'+esc(t.Name)+'</div>'
+      +'<div class="card-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>'+esc(t.Location)+'</div>'
+      +ratingHtml+distHtml
+      +'<div class="card-foot"><div class="card-time">⏰ <b>'+oh+'</b> – <b>'+ch+'</b></div>'
+      +'<div class="card-actions"><button class="btn-fav'+(isFav?' active':'')+'" onclick="event.stopPropagation();toggleFav(\''+t.Turf_ID+'\',this)" title="Favourite">♡</button>'
+      +'<button class="btn-book" onclick="event.stopPropagation();openTurfDetail(\''+t.Turf_ID+'\')">Book →</button></div></div></div></div>';
+  }
+  document.getElementById('turfGrid').innerHTML = html;
+}
+
+function starStr(r) {
+  var s = '', full = Math.floor(r), half = (r-full)>=.5?1:0;
+  for (var i=0;i<full;i++) s+='★'; if(half) s+='½'; for(var j=full+half;j<5;j++) s+='☆'; return s;
+}
+
+function toggleFav(id, btn) {
+  var idx = favourites.indexOf(id);
+  if (idx===-1) favourites.push(id); else favourites.splice(idx,1);
+  btn.classList.toggle('active', favourites.indexOf(id)!==-1);
+  localStorage.setItem('tb_favs', JSON.stringify(favourites));
+  showToast(favourites.indexOf(id)!==-1 ? 'Added to favourites' : 'Removed from favourites', 'green');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MAP PAGE
+// ════════════════════════════════════════════════════════════════
+function initMap() {
+  if (mapInitialised) { renderMapList(allTurfs); return; }
+  mapInitialised = true;
+  renderMapList(allTurfs);
+  if (!MAPS_API_KEY || MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') { renderFallbackMap(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://maps.googleapis.com/maps/api/js?key='+MAPS_API_KEY+'&callback=onMapsLoaded';
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
+}
+function onMapsLoaded() {
+  googleMap = new google.maps.Map(document.getElementById('googleMap'), { center:{lat:20.5937,lng:78.9629}, zoom:5, styles:darkMapStyle(), disableDefaultUI:false, zoomControl:true, mapTypeControl:false, streetViewControl:false, fullscreenControl:true });
+  document.querySelector('.map-overlay-hint') && (document.querySelector('.map-overlay-hint').style.display='none');
+  placeMarkers();
+}
+function placeMarkers() {
+  mapMarkers.forEach(function(m){ m.setMap(null); }); mapMarkers=[];
+  for (var i=0;i<allTurfs.length;i++) {
+    var t=allTurfs[i]; if (!t.Lat||!t.Lng) continue;
+    var marker=new google.maps.Marker({position:{lat:t.Lat,lng:t.Lng},map:googleMap,title:t.Name,icon:{path:google.maps.SymbolPath.CIRCLE,scale:10,fillColor:'#4ade80',fillOpacity:1,strokeColor:'#07090a',strokeWeight:2}});
+    (function(turf,mk){ var iw=new google.maps.InfoWindow({content:'<div style="background:#111820;color:#eef4f0;padding:10px 13px;border-radius:10px;font-family:DM Sans,sans-serif;min-width:180px"><div style="font-family:Bebas Neue,sans-serif;font-size:1.1rem;letter-spacing:1.5px;color:#4ade80;margin-bottom:3px">'+esc(turf.Name)+'</div><div style="font-size:.75rem;color:#8fa899;margin-bottom:6px">'+esc(turf.Location)+'</div><div style="font-family:Bebas Neue,sans-serif;font-size:1.1rem;color:#4ade80">₹'+turf.Base_Price+'/hr</div>'+(turf.Rating>0?'<div style="color:#fbbf24;font-size:.78rem">'+turf.Rating.toFixed(1)+'★</div>':'')+'<button onclick="openTurfDetail(\''+turf.Turf_ID+'\')" style="margin-top:8px;background:#4ade80;color:#07090a;border:none;border-radius:50px;padding:5px 14px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer">Book</button></div>'});
+    mk.addListener('click',function(){ iw.open(googleMap,mk); highlightMapItem(turf.Turf_ID); }); })(t,marker);
+    mapMarkers.push(marker);
+  }
+  if (mapMarkers.length) { var bounds=new google.maps.LatLngBounds(); mapMarkers.forEach(function(m){ bounds.extend(m.getPosition()); }); googleMap.fitBounds(bounds); }
+}
+function renderFallbackMap() {
+  document.getElementById('googleMap').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;background:var(--surface);color:var(--gray)"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-md)" stroke-width="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg><p style="font-size:.9rem">Set MAPS_API_KEY env variable to enable interactive map</p><p style="font-size:.78rem">Use the sidebar to browse and book turfs</p></div>';
+}
+function renderMapList(turfs) {
+  document.getElementById('mapCount').textContent = turfs.length+' turfs';
+  if (!turfs.length) { document.getElementById('mapList').innerHTML='<div class="empty-state">No turfs found</div>'; return; }
+  var html='';
+  for (var i=0;i<turfs.length;i++) {
+    var t=turfs[i], imgs=(t.Image_URL||'').split(',').map(function(s){return s.trim();}).filter(Boolean), img=imgs[0]||'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=150&q=60';
+    var distStr=(userLocation&&t.Lat)?' · '+dist(t,userLocation).toFixed(1)+' km':'';
+    html+='<div class="map-item" id="mi-'+t.Turf_ID+'" onclick="focusMapTurf(\''+t.Turf_ID+'\')">'
+      +'<div class="map-thumb"><img src="'+img+'" loading="lazy" alt="'+esc(t.Name)+'" onerror="this.src=\'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&q=60\'"/></div>'
+      +'<div class="map-info"><div class="map-name">'+esc(t.Name)+'</div><div class="map-loc">'+esc(t.Location)+distStr+'</div><div class="map-meta"><span class="map-price">₹'+t.Base_Price+'/hr</span>'+(t.Rating>0?'<span class="map-rating">'+t.Rating.toFixed(1)+'★</span>':'')+'</div></div>'
+      +'<button class="map-book-btn" onclick="event.stopPropagation();openTurfDetail(\''+t.Turf_ID+'\')">Book</button></div>';
+  }
+  document.getElementById('mapList').innerHTML=html;
+}
+function filterMapList() {
+  var q=(document.getElementById('mapSearch').value||'').toLowerCase().trim();
+  renderMapList(!q?allTurfs:allTurfs.filter(function(t){return t.Name.toLowerCase().indexOf(q)!==-1||t.Location.toLowerCase().indexOf(q)!==-1;}));
+}
+function focusMapTurf(id) { highlightMapItem(id); if(googleMap){var t=getTurfById(id);if(t&&t.Lat){googleMap.panTo({lat:t.Lat,lng:t.Lng});googleMap.setZoom(14);}}}
+function highlightMapItem(id) { document.querySelectorAll('.map-item').forEach(function(el){el.classList.remove('hl');}); var el=document.getElementById('mi-'+id); if(el){el.classList.add('hl');el.scrollIntoView({behavior:'smooth',block:'nearest'});}}
+function darkMapStyle(){return[{elementType:'geometry',stylers:[{color:'#0d1117'}]},{elementType:'labels.text.fill',stylers:[{color:'#8fa899'}]},{elementType:'labels.text.stroke',stylers:[{color:'#07090a'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#161f2b'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#060a0d'}]},{featureType:'poi',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}];}
+
+// ════════════════════════════════════════════════════════════════
+//  TURF DETAIL MODAL
+// ════════════════════════════════════════════════════════════════
+function openTurfDetail(turfId) {
+  selectedTurf = getTurfById(turfId);
+  if (!selectedTurf) return;
+  galleryImages = (selectedTurf.Image_URL||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+  if (!galleryImages.length) galleryImages = ['https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=900&q=80'];
+  galleryIdx = 0;
+  var today = todayStr();
+  var oh = pad(selectedTurf.Open_Time)+':00', ch = pad(selectedTurf.Close_Time)+':00';
+  var galDots=''; if(galleryImages.length>1){for(var d=0;d<galleryImages.length;d++)galDots+='<button class="gdot'+(d===0?' active':'')+'" onclick="syncGallery('+d+')"></button>';}
+  var thumbsHtml=''; if(galleryImages.length>1){for(var ti=0;ti<galleryImages.length;ti++)thumbsHtml+='<div class="detail-thumb'+(ti===0?' active':'')+'" onclick="syncGallery('+ti+')" data-ti="'+ti+'"><img src="'+galleryImages[ti]+'" loading="lazy" onerror="this.src=\'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&q=60\'"/></div>';}
+  var ratingHtml=selectedTurf.Rating>0?'<div class="chip"><div class="chip-lbl">Rating</div><div class="chip-val" style="color:var(--amber)">'+selectedTurf.Rating.toFixed(1)+' ★</div></div>':'';
+  document.getElementById('modalContent').innerHTML=
+    '<div class="detail-gal" id="galWrap">'
+    +'<img id="galImg" src="'+galleryImages[0]+'" onerror="this.src=\'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=900&q=80\'"/>'
+    +'<div class="gal-grad"></div><div class="gal-info"><h2>'+esc(selectedTurf.Name)+'</h2><p>📍 '+esc(selectedTurf.Location)+'</p></div>'
+    +(galleryImages.length>1?'<div class="gal-nav"><button class="gal-btn" onclick="changeGallery(-1)">‹</button><button class="gal-btn" onclick="changeGallery(1)">›</button></div><div class="gal-dots">'+galDots+'</div>':'')
+    +'<button class="btn-view-imgs lb-trigger-btn" onclick="openLightbox(\''+selectedTurf.Turf_ID+'\',galleryIdx)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>'+(galleryImages.length>1?'View All '+galleryImages.length+' Photos':'View Full Image')+'</button></div>'
+    +'<div class="detail-body"><div class="detail-chips">'
+    +'<div class="chip"><div class="chip-lbl">Price/hr</div><div class="chip-val g">₹'+selectedTurf.Base_Price+'</div></div>'
+    +'<div class="chip"><div class="chip-lbl">Opens</div><div class="chip-val">'+oh+'</div></div>'
+    +'<div class="chip"><div class="chip-lbl">Closes</div><div class="chip-val">'+ch+'</div></div>'
+    +ratingHtml+'</div>'
+    +(thumbsHtml?'<div class="detail-thumbs">'+thumbsHtml+'</div>':'')
+    +'<div class="slot-hdr"><span></span>Pick Date &amp; Slots</div>'
+    +'<div class="date-row"><label>Date</label><input type="date" id="slotDate" min="'+today+'" value="'+today+'" onchange="loadSlots(this.value)"/></div>'
+    +'<div class="multi-hint">💡 <b>Multi-slot:</b> Tap consecutive slots to book 2–3 hours at once.</div>'
+    +'<div class="legend"><div class="leg-i"><span class="ldot av"></span>Available</div><div class="leg-i"><span class="ldot sl"></span>Selected</div><div class="leg-i"><span class="ldot bk"></span>Booked</div><div class="leg-i"><span class="ldot rs"></span>Reserved</div></div>'
+    +'<div id="slotGrid" class="slot-grid"><div class="loading-state" style="padding:12px"><div class="loader-ring"></div></div></div>'
+    +'<div class="slot-summary" id="slotSummary"><div class="ss-slots" id="ssSlotsText"></div><div class="ss-price" id="ssPriceText"></div></div>'
+    +'<button class="btn-primary" id="proceedBtn" disabled onclick="openBookingModal()" style="width:100%">Select Slots to Continue</button></div>';
+  selectedSlots = [];
+  document.getElementById('turfModal').classList.add('active');
+  loadSlots(today);
+}
+
+function changeGallery(dir) { syncGallery((galleryIdx+dir+galleryImages.length)%galleryImages.length); }
+function syncGallery(idx) {
+  galleryIdx=idx;
+  var img=document.getElementById('galImg'); if(img) img.src=galleryImages[idx];
+  document.querySelectorAll('.gdot').forEach(function(d,i){d.classList.toggle('active',i===idx);});
+  document.querySelectorAll('.detail-thumb').forEach(function(d,i){d.classList.toggle('active',i===idx);});
+}
+
+function loadSlots(date) {
+  selectedDate=date; selectedSlots=[]; updateSlotSummary();
+  var grid=document.getElementById('slotGrid'), pb=document.getElementById('proceedBtn');
+  if(pb){pb.disabled=true;pb.textContent='Select Slots to Continue';}
+  grid.innerHTML='<div class="loading-state" style="padding:12px"><div class="loader-ring"></div></div>';
+  api('POST','/api/availability',{turfId:selectedTurf.Turf_ID,date:date}).then(function(data){
+    if(!data||!data.success){grid.innerHTML='<p style="color:var(--red);font-size:.84rem">'+(data?data.message:'No response')+'</p>';return;}
+    if(!data.slots||!data.slots.length){grid.innerHTML='<p style="color:var(--gray);font-size:.85rem;padding:8px 0">No slots for this date.</p>';return;}
+    var html='';
+    for(var i=0;i<data.slots.length;i++){var s=data.slots[i];var lbl=s.slot.replace(' - ','<br/>');html+='<button class="slot-btn '+s.status+'"'+(s.status!=='available'?' disabled':'')+' onclick="toggleSlot(\''+s.slot.replace(/'/g,'')+'\',this)">'+lbl+'</button>';}
+    grid.innerHTML=html;
+  }).catch(function(e){grid.innerHTML='<p style="color:var(--red);font-size:.84rem">Error: '+e.message+'</p>';});
+}
+
+function toggleSlot(slot,btn) {
+  var idx=selectedSlots.indexOf(slot);
+  if(idx===-1){
+    if(selectedSlots.length>0&&!isContiguous(slot)){showToast('Select consecutive slots only','red');return;}
+    if(selectedSlots.length>=6){showToast('Max 6 slots at once','red');return;}
+    selectedSlots.push(slot);btn.classList.add('selected');
+  }else{selectedSlots.splice(idx,1);btn.classList.remove('selected');}
+  updateSlotSummary();
+}
+function isContiguous(newSlot){
+  var lastSlot=selectedSlots[selectedSlots.length-1],firstSlot=selectedSlots[0];
+  var newHour=parseInt(newSlot.split(':')[0],10);
+  var lastEndHour=parseInt(lastSlot.split(' - ')[1].split(':')[0],10);
+  var firstStartHour=parseInt(firstSlot.split(':')[0],10);
+  return newHour===lastEndHour||newHour===(firstStartHour-1);
+}
+function updateSlotSummary(){
+  var summary=document.getElementById('slotSummary'),pb=document.getElementById('proceedBtn');
+  if(!summary||!selectedTurf)return;
+  if(selectedSlots.length===0){summary.classList.remove('show');if(pb){pb.disabled=true;pb.textContent='Select Slots to Continue';}return;}
+  var total=selectedSlots.length*selectedTurf.Base_Price;
+  document.getElementById('ssSlotsText').innerHTML='<b>'+selectedSlots.length+'</b> slot'+(selectedSlots.length>1?'s':'')+' · '+selectedSlots[0].split(' - ')[0]+' – '+selectedSlots[selectedSlots.length-1].split(' - ')[1];
+  document.getElementById('ssPriceText').textContent='₹'+total;
+  summary.classList.add('show');
+  if(pb){pb.disabled=false;pb.textContent='Book '+selectedSlots.length+(selectedSlots.length>1?' Slots':' Slot')+' → ₹'+total;}
+}
+function closeTurfModal(){document.getElementById('turfModal').classList.remove('active');cancelReservation();}
+
+// ════════════════════════════════════════════════════════════════
+//  BOOKING MODAL
+// ════════════════════════════════════════════════════════════════
+function openBookingModal(){
+  if(!selectedSlots.length)return;
+  api('POST','/api/reserve',{turfId:selectedTurf.Turf_ID,date:selectedDate,slots:selectedSlots}).then(function(res){
+    if(!res||!res.success){showToast(res?res.message:'Reserve failed','red');return;}
+    reservationId=res.reservationId;
+    startCountdown(res.expiresAt);
+    renderBookingForm();
+  }).catch(function(e){showToast('Reserve error: '+e.message,'red');});
+}
+
+function renderBookingForm(){
+  var name=(currentUser&&currentUser.displayName)?currentUser.displayName:'';
+  var email=(currentUser&&currentUser.email)?currentUser.email:'';
+  var phone=(userProfile&&userProfile.Phone)?userProfile.Phone:'';
+  var total=selectedSlots.length*selectedTurf.Base_Price;
+  var tagsHtml='<span class="stag">🏟️ '+esc(selectedTurf.Name)+'</span><span class="stag">📅 '+selectedDate+'</span>';
+  if(selectedSlots.length===1)tagsHtml+='<span class="stag">⏰ '+selectedSlots[0]+'</span>';
+  else{tagsHtml+='<span class="stag">⏰ '+selectedSlots[0].split(' - ')[0]+' – '+selectedSlots[selectedSlots.length-1].split(' - ')[1]+'</span><span class="stag">'+selectedSlots.length+' hrs</span>';}
+  document.getElementById('bookingContent').innerHTML=
+    '<div class="book-head"><h2>Confirm Booking</h2><div class="slot-tags">'+tagsHtml+'</div></div>'
+    +'<div class="timer-strip"><div class="timer-left"><div class="timer-dot"></div>Slot reserved for</div><div class="timer-val" id="timerDisplay">5:00</div></div>'
+    +'<div class="book-form">'
+    +'<div class="f-group"><label class="f-label">Full Name</label><input type="text" id="bName" class="f-input" placeholder="Your full name" value="'+esc(name)+'" autocomplete="name"/></div>'
+    +'<div class="f-group"><label class="f-label">Phone'+(phone?' <span style="color:var(--green);font-size:.64rem;letter-spacing:.5px;font-weight:600">● from profile</span>':'')+'</label><input type="tel" id="bPhone" class="f-input" placeholder="+91 XXXXX XXXXX" value="'+esc(phone)+'" autocomplete="tel"/></div>'
+    +'<div class="f-group"><label class="f-label">Email</label><input type="email" id="bEmail" class="f-input" value="'+esc(email)+'" readonly/></div>'
+    +'<div class="amount-box"><div><div class="amount-lbl">Total Amount</div><div style="font-size:.7rem;color:var(--gray);margin-top:2px">'+selectedSlots.length+' hour'+(selectedSlots.length>1?'s':'')+' · ₹'+selectedTurf.Base_Price+'/hr</div></div><div class="amount-val">₹'+total+'</div></div>'
+    +'<button class="btn-primary full-w" onclick="initiatePayment()">Pay ₹'+total+' &amp; Confirm →</button></div>';
+  document.getElementById('bookingModal').classList.add('active');
+}
+
+function closeBookingModal(){document.getElementById('bookingModal').classList.remove('active');cancelReservation();clearCountdown();}
+
+function startCountdown(exp){
+  clearCountdown();
+  countdownTimer=setInterval(function(){
+    var rem=Math.max(0,exp-Date.now()),m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+    var el=document.getElementById('timerDisplay');
+    if(el){el.textContent=m+':'+(s<10?'0':'')+s;el.className='timer-val'+(rem<60000?' urgent':'');}
+    if(rem<=0){clearCountdown();showToast('Reservation expired!','red');closeBookingModal();}
+  },500);
+}
+function clearCountdown(){if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}}
+
+function cancelReservation(){
+  if(!reservationId||!selectedTurf)return;
+  api('POST','/api/release',{turfId:selectedTurf.Turf_ID,date:selectedDate,reservationId:reservationId});
+  reservationId=null;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RAZORPAY / PAYMENT
+// ════════════════════════════════════════════════════════════════
+function initiatePayment(){
+  var name=document.getElementById('bName').value.trim();
+  var phone=document.getElementById('bPhone').value.trim();
+  var email=document.getElementById('bEmail').value.trim();
+  var total=selectedSlots.length*selectedTurf.Base_Price;
+  if(!name){showToast('Enter your name','red');return;}
+  if(!phone||phone.replace(/\D/g,'').length<10){showToast('Enter valid 10-digit phone','red');return;}
+  if(!RAZORPAY_KEY){
+    showToast('Demo mode — confirming booking','green');
+    confirmBooking(name,phone,email,'DEMO_'+Date.now());
+    return;
+  }
+  var options={key:RAZORPAY_KEY,amount:total*100,currency:'INR',name:'TurfBuddie',description:selectedTurf.Name+' | '+selectedSlots.length+' slot'+(selectedSlots.length>1?'s':''),prefill:{name:name,contact:phone,email:email},theme:{color:'#4ade80'},handler:function(r){confirmBooking(name,phone,email,r.razorpay_payment_id);},modal:{ondismiss:function(){showToast('Payment cancelled. Slot still reserved.','red');}}};
+  new Razorpay(options).open();
+}
+
+function confirmBooking(name,phone,email,paymentId){
+  showToast('Confirming booking…');
+  var total=selectedSlots.length*selectedTurf.Base_Price;
+  if(phone&&phone!==(userProfile&&userProfile.Phone)){
+    userProfile.Phone=phone;
+    localStorage.setItem('tb_profile',JSON.stringify({name:userProfile.Name||name,phone:phone,city:userProfile.City||''}));
+    api('POST','/api/profile/save',{email:email,name:name,phone:phone,city:userProfile.City||''});
+  }
+  api('POST','/api/booking/create',{turfId:selectedTurf.Turf_ID,date:selectedDate,slots:selectedSlots,userName:name,phone:phone,email:email,amount:total,reservationId:reservationId,razorpayPaymentId:paymentId}).then(function(res){
+    if(!res||!res.success){showToast(res?res.message:'Booking failed','red');return;}
+    clearCountdown();reservationId=null;
+    document.getElementById('bookingModal').classList.remove('active');
+    document.getElementById('turfModal').classList.remove('active');
+    showSuccessModal(res.bookingId,name,phone,email,total);
+    loadUserBookings();
+  }).catch(function(e){showToast('Error: '+e.message,'red');});
+}
+
+function showSuccessModal(bookingId,name,phone,email,total){
+  var slotDesc=selectedSlots.length===1?selectedSlots[0]:selectedSlots[0].split(' - ')[0]+' – '+selectedSlots[selectedSlots.length-1].split(' - ')[1]+' ('+selectedSlots.length+' hrs)';
+  document.getElementById('successDetails').innerHTML='<div class="booking-summary"><div class="sum-row"><span class="lb">Booking ID</span><span class="vl g">'+bookingId+'</span></div><div class="sum-row"><span class="lb">Turf</span><span class="vl">'+esc(selectedTurf.Name)+'</span></div><div class="sum-row"><span class="lb">Date</span><span class="vl">'+selectedDate+'</span></div><div class="sum-row"><span class="lb">Slot(s)</span><span class="vl">'+slotDesc+'</span></div><div class="sum-row"><span class="lb">Amount</span><span class="vl g">₹'+total+'</span></div></div>';
+  document.getElementById('successModal').classList.add('active');
+}
+function closeSuccessModal(){document.getElementById('successModal').classList.remove('active');loadTurfs();}
+
+// ════════════════════════════════════════════════════════════════
+//  MY BOOKINGS
+// ════════════════════════════════════════════════════════════════
+function loadUserBookings(){
+  if(!currentUser||!currentUser.email)return;
+  api('POST','/api/bookings',{email:currentUser.email}).then(function(r){
+    if(!r||!r.success)return;
+    userBookings=r.bookings||[];
+    var upcoming=userBookings.filter(function(b){return b.Status==='Confirmed';}).length;
+    var badge=document.getElementById('bookingsBadge');
+    if(upcoming>0){badge.textContent=upcoming;badge.style.display='inline-flex';}else{badge.style.display='none';}
+    updateProfileStats();
+  });
+}
+function switchBTab(tab){
+  activeBookingTab=tab;
+  document.querySelectorAll('.ttab').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tt-'+tab).classList.add('active');
+  renderBookings();
+}
+function renderBookings(){
+  var list=userBookings.filter(function(b){return b.Status===(activeBookingTab==='upcoming'?'Confirmed':activeBookingTab==='past'?'Completed':'Cancelled');});
+  var container=document.getElementById('bookingsList');
+  if(!list.length){container.innerHTML='<div class="empty-state">📋 No '+activeBookingTab+' bookings.</div>';return;}
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var b=list[i],statusCls=b.Status.toLowerCase();
+    var slots=b.Time_Slot.split('|');
+    var slotDisplay=slots.length===1?slots[0]:slots[0].split(' - ')[0]+' – '+slots[slots.length-1].split(' - ')[1]+' ('+slots.length+' hrs)';
+    var img=b.Turf_Image||'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=150&q=60';
+    html+='<div class="bcard"><div class="bcard-top"><span class="bcard-id">'+b.Booking_ID+'</span><span class="bstatus '+statusCls+'">'+b.Status+'</span></div>'
+      +'<div class="bcard-mid"><div class="bcard-thumb"><img src="'+img+'" loading="lazy" onerror="this.src=\'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&q=60\'"/></div>'
+      +'<div class="bcard-details"><div class="bcard-turf">'+esc(b.Turf_Name)+'</div><div class="bcard-meta"><span>📅 '+b.Date+'</span><span>📍 '+esc(b.Turf_Location)+'</span></div><div class="bcard-slots">⏰ '+slotDisplay+'</div></div>'
+      +'<div class="bcard-amt">₹'+b.Amount+'</div></div>'
+      +'<div class="bcard-foot"><button class="bcard-btn" onclick="viewBookingDetail(\''+b.Booking_ID+'\')">View Details</button>'
+      +(b.Status==='Confirmed'?'<button class="bcard-btn danger" onclick="doCancelBooking(\''+b.Booking_ID+'\')">Cancel</button>':'')
+      +(b.Status==='Confirmed'?'<button class="bcard-btn" onclick="rebookTurf(\''+b.Turf_ID+'\')">Rebook</button>':'')
+      +'</div></div>';
+  }
+  container.innerHTML=html;
+}
+function viewBookingDetail(bookingId){
+  var b=userBookings.find(function(x){return x.Booking_ID===bookingId;}); if(!b)return;
+  var slots=b.Time_Slot.split('|');
+  document.getElementById('bdetailContent').innerHTML=
+    '<div class="bdetail-head"><h2>Booking Details</h2><span class="bstatus '+b.Status.toLowerCase()+'">'+b.Status+'</span></div>'
+    +'<div class="bdetail-body"><div class="bdetail-summary">'
+    +'<div class="bdr"><span class="lb">Booking ID</span><span class="vl g">'+b.Booking_ID+'</span></div>'
+    +'<div class="bdr"><span class="lb">Turf</span><span class="vl">'+esc(b.Turf_Name)+'</span></div>'
+    +'<div class="bdr"><span class="lb">Location</span><span class="vl">'+esc(b.Turf_Location)+'</span></div>'
+    +'<div class="bdr"><span class="lb">Date</span><span class="vl">'+b.Date+'</span></div>'
+    +'<div class="bdr"><span class="lb">Slot(s)</span><span class="vl">'+slots.join(', ')+'</span></div>'
+    +'<div class="bdr"><span class="lb">Duration</span><span class="vl">'+slots.length+' hr'+(slots.length>1?'s':'')+'</span></div>'
+    +'<div class="bdr"><span class="lb">Amount Paid</span><span class="vl g">₹'+b.Amount+'</span></div>'
+    +(b.Payment_ID?'<div class="bdr"><span class="lb">Payment ID</span><span class="vl" style="font-size:.76rem;word-break:break-all">'+b.Payment_ID+'</span></div>':'')
+    +'</div>'+(b.Status==='Confirmed'?'<button class="btn-danger full-w" onclick="doCancelBooking(\''+b.Booking_ID+'\');closeBdetail()" style="margin-top:12px">Cancel Booking</button>':'')+'</div>';
+  document.getElementById('bdetailModal').classList.add('active');
+}
+function closeBdetail(){document.getElementById('bdetailModal').classList.remove('active');}
+function doCancelBooking(bookingId){
+  if(!currentUser)return;
+  if(!confirm('Cancel booking '+bookingId+'? This cannot be undone.'))return;
+  api('POST','/api/booking/cancel',{bookingId:bookingId,email:currentUser.email}).then(function(r){
+    if(!r||!r.success){showToast(r?r.message:'Cancel failed','red');return;}
+    showToast('Booking cancelled','green');loadUserBookings();renderBookings();
+  }).catch(function(e){showToast('Error: '+e.message,'red');});
+}
+function rebookTurf(turfId){closeBdetail();showPage('home');setTimeout(function(){openTurfDetail(turfId);},300);}
+
+// ════════════════════════════════════════════════════════════════
+//  PROFILE
+// ════════════════════════════════════════════════════════════════
+function populateProfile(user){
+  var stored=safeJsonParse(localStorage.getItem('tb_profile')||'{}')||{};
+  document.getElementById('pfName').value=(userProfile&&userProfile.Name)||user.displayName||stored.name||'';
+  document.getElementById('pfEmail').value=user.email||'';
+  document.getElementById('pfPhone').value=(userProfile&&userProfile.Phone)||stored.phone||'';
+  document.getElementById('pfCity').value=(userProfile&&userProfile.City)||stored.city||'';
+}
+function refreshProfile(){
+  if(!currentUser)return;
+  var name=currentUser.displayName||currentUser.email||'User';
+  document.getElementById('profileAvatar').textContent=name[0].toUpperCase();
+  document.getElementById('profileName').textContent=name;
+  document.getElementById('profileEmail').textContent=currentUser.email||'';
+  var created=currentUser.metadata&&currentUser.metadata.creationTime?'Member since '+new Date(currentUser.metadata.creationTime).toLocaleDateString('en-IN',{year:'numeric',month:'short'}):'';
+  document.getElementById('profileSince').textContent=created;
+  populateProfile(currentUser);updateProfileStats();renderFavourites();renderRecentActivity();
+}
+function updateProfileStats(){
+  var total=userBookings.length;
+  var spent=userBookings.reduce(function(s,b){return b.Status!=='Cancelled'?s+b.Amount:s;},0);
+  var hours=userBookings.reduce(function(s,b){return b.Status==='Cancelled'?s:s+b.Time_Slot.split('|').length;},0);
+  document.getElementById('ps-bookings').textContent=total;
+  document.getElementById('ps-spent').textContent='₹'+(spent>=1000?Math.round(spent/1000)+'k':spent);
+  document.getElementById('ps-hours').textContent=hours+'h';
+}
+function saveProfile(){
+  var name=document.getElementById('pfName').value.trim(),phone=document.getElementById('pfPhone').value.trim(),city=document.getElementById('pfCity').value.trim(),email=currentUser?currentUser.email:'';
+  userProfile={Name:name,Email:email,Phone:phone,City:city};
+  localStorage.setItem('tb_profile',JSON.stringify({name:name,phone:phone,city:city}));
+  if(email){api('POST','/api/profile/save',{email:email,name:name,phone:phone,city:city}).then(function(r){showToast(r&&r.success?'Profile saved!':'Saved locally','green');}).catch(function(){showToast('Saved locally','green');});}else{showToast('Profile saved!','green');}
+  if(currentUser&&name&&name!==currentUser.displayName){currentUser.updateProfile({displayName:name}).then(function(){document.getElementById('userDisplayName').textContent=name;document.getElementById('userAvatar').textContent=name[0].toUpperCase();});}
+}
+function renderFavourites(){
+  var grid=document.getElementById('favGrid');
+  var favTurfs=allTurfs.filter(function(t){return favourites.indexOf(t.Turf_ID)!==-1;});
+  if(!favTurfs.length){grid.innerHTML='<p class="empty-note">Tap ♡ on any turf card to save it here.</p>';return;}
+  var html='';
+  for(var i=0;i<favTurfs.length;i++){var t=favTurfs[i];var img=(t.Image_URL||'').split(',')[0].trim()||'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=200&q=70';html+='<div class="fav-card" onclick="showPage(\'home\');setTimeout(function(){openTurfDetail(\''+t.Turf_ID+'\')},300)"><img class="fav-img" src="'+img+'" loading="lazy" onerror="this.src=\'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=200&q=70\'"/><div class="fav-info"><div class="fav-name">'+esc(t.Name)+'</div><div class="fav-price">₹'+t.Base_Price+'/hr</div></div></div>';}
+  grid.innerHTML=html;
+}
+function renderRecentActivity(){
+  var el=document.getElementById('recentActivity'),recent=userBookings.slice(0,5);
+  if(!recent.length){el.innerHTML='<p class="empty-note" style="padding:10px 0">No activity yet.</p>';return;}
+  var html='';
+  for(var i=0;i<recent.length;i++){var b=recent[i];html+='<div class="r-item"><div class="r-dot"></div><div class="r-text">Booked <b>'+esc(b.Turf_Name)+'</b> on '+b.Date+'</div><div class="r-date">₹'+b.Amount+'</div></div>';}
+  el.innerHTML=html;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  LIGHTBOX
+// ════════════════════════════════════════════════════════════════
+function openLightbox(turfId,startIdx){
+  var turf=getTurfById(turfId);if(!turf)return;
+  lbTurfId=turfId;lbImages=(turf.Image_URL||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+  if(!lbImages.length)lbImages=['https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=1200&q=90'];
+  document.getElementById('lbTurfName').textContent=turf.Name;
+  var fs=document.getElementById('lbFilmstrip');fs.innerHTML='';fs.style.display=lbImages.length>1?'':'none';
+  for(var j=0;j<lbImages.length;j++){var th=document.createElement('div');th.className='lb-thumb';th.setAttribute('data-li',j);var im=document.createElement('img');im.src=lbImages[j];im.loading='lazy';im.onerror=function(){this.src='https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&q=60';};th.appendChild(im);fs.appendChild(th);th.onclick=(function(idx){return function(){lbGoTo(idx);};})(j);}
+  document.getElementById('lightbox').classList.add('active');document.body.style.overflow='hidden';lbGoTo(startIdx||0);
+  var hint=document.getElementById('lbKbHint');hint.classList.add('show');clearTimeout(lbKbTimer);lbKbTimer=setTimeout(function(){hint.classList.remove('show');},2500);
+}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('active');document.body.style.overflow='';var m=document.getElementById('lbMainImg');if(m){m.src='';m.classList.remove('visible');}}
+function lbGoTo(idx){
+  idx=Math.max(0,Math.min(idx,lbImages.length-1));lbIdx=idx;
+  var m=document.getElementById('lbMainImg'),sp=document.getElementById('lbSpinner');
+  m.classList.remove('visible');sp.classList.remove('hidden');m.src=lbImages[idx];
+  document.getElementById('lbCounter').textContent=(idx+1)+' / '+lbImages.length;
+  document.getElementById('lbPrev').disabled=idx===0;document.getElementById('lbNext').disabled=idx===lbImages.length-1;
+  document.querySelectorAll('.lb-thumb').forEach(function(t,i){t.classList.toggle('active',i===idx);});
+  var at=document.querySelector('.lb-thumb[data-li="'+idx+'"]');if(at)at.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+function lbNav(d){lbGoTo(lbIdx+d);}
+function lbImgLoaded(){document.getElementById('lbMainImg').classList.add('visible');document.getElementById('lbSpinner').classList.add('hidden');}
+function lbImgError(){document.getElementById('lbMainImg').src='https://images.unsplash.com/photo-1459865264687-595d652de67e?w=900&q=80';document.getElementById('lbSpinner').classList.add('hidden');document.getElementById('lbMainImg').classList.add('visible');}
+function lbBgClick(e){if(e.target===document.getElementById('lightbox'))closeLightbox();}
+document.addEventListener('keydown',function(e){if(!document.getElementById('lightbox').classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();lbNav(-1);}if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();lbNav(1);}if(e.key==='Escape')closeLightbox();});
+var lbTx=null;
+document.addEventListener('touchstart',function(e){if(document.getElementById('lightbox').classList.contains('active'))lbTx=e.touches[0].clientX;});
+document.addEventListener('touchend',function(e){if(!document.getElementById('lightbox').classList.contains('active')||lbTx===null)return;var dx=e.changedTouches[0].clientX-lbTx;if(Math.abs(dx)>50)lbNav(dx<0?1:-1);lbTx=null;});
+
+// ════════════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════════════
+function closeBgClick(e,id,fn){if(e.target===document.getElementById(id))fn();}
+function getTurfById(id){return allTurfs.find(function(t){return t.Turf_ID===id;})||null;}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function pad(n){return(parseInt(n,10)<10?'0':'')+parseInt(n,10);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function safeJsonParse(s){try{return JSON.parse(s);}catch(e){return null;}}
+var _tt;
+function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove('show');},3400);}
+</script>
+</body>
+</html>
