@@ -34,22 +34,34 @@ const SAMPLE_TURFS = [
 
 // ── Google Auth ────────────────────────────────────────────────
 function parseCredentials(raw) {
-  // Strip surrounding quotes Railway sometimes adds, then parse
-  const trimmed = raw.trim().replace(/^'(.*)'$/s, '$1').replace(/^"(.*)"$/s, '$1');
+  let s = raw.trim();
+  // Strip a single wrapping quote character (Railway adds these)
+  if ((s[0] === "'" && s[s.length - 1] === "'") ||
+      (s[0] === '"' && s[s.length - 1] === '"')) {
+    s = s.slice(1, -1);
+  }
+  // Find the actual JSON object — start from first '{' in case there is leading noise
+  const start = s.indexOf('{');
+  const end   = s.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('GOOGLE_SERVICE_ACCOUNT does not contain a JSON object.');
   try {
-    return JSON.parse(trimmed);
+    return JSON.parse(s.slice(start, end + 1));
   } catch (e) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT is not valid JSON. Copy the .json file contents exactly, with no extra quotes around it.');
+    throw new Error('GOOGLE_SERVICE_ACCOUNT JSON is malformed: ' + e.message);
   }
 }
 
 function getAuth() {
   let credentials;
-  if (process.env.GOOGLE_SERVICE_ACCOUNT) {
-    credentials = parseCredentials(process.env.GOOGLE_SERVICE_ACCOUNT);
+  const sa = process.env.GOOGLE_SERVICE_ACCOUNT || '';
+  if (sa.includes('"type"') || sa.includes("'type'") || sa.trim().startsWith('{')) {
+    // Value IS the JSON — parse it directly
+    credentials = parseCredentials(sa);
+  } else if (sa) {
+    // Value looks like a file path
+    credentials = JSON.parse(fs.readFileSync(sa.trim(), 'utf8'));
   } else if (process.env.GOOGLE_KEY_FILE) {
-    const raw = fs.readFileSync(process.env.GOOGLE_KEY_FILE, 'utf8');
-    credentials = JSON.parse(raw);
+    credentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_KEY_FILE.trim(), 'utf8'));
   } else {
     throw new Error('Set GOOGLE_SERVICE_ACCOUNT or GOOGLE_KEY_FILE env var.');
   }
